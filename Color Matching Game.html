@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Macthing Game</title>
+</head>
+
+<body>
+    <h1>Color streak (Train your brain muscles 🧠)</h1><br>
+    <button id="st" onclick="startGame()">New Game</button><br>
+    <div id="scr"></div><br>
+    <div id="block">
+        <div class="color" id="red" onclick="check(0)"></div>
+        <div class="color" id="blue" onclick="check(2)"></div>
+        <div class="color" id="yellow" onclick="check(3)"></div>
+        <div class="color" id="green" onclick="check(1)"></div>
+        <div class="center"></div>
+    </div>
+    <div id="message"></div>
+    <div id="content">
+    </div>
+    <style>
+        * {
+            box-sizing: border-box;
+            color: rgb(253, 177, 130);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 18px;
+            padding: 36px 20px;
+            background-color: rgb(50, 50, 50);
+            font-family: sans-serif;
+            color: var(--muted);
+        }
+
+        h1,
+        #message {
+            margin: 8px 0 0 0;
+            text-align: center;
+            font-weight: 800;
+            font-family: serif;
+            font-style: italic;
+            font-size: 25px;
+        }
+
+        /* controls row */
+        #inp,
+        #st {
+            font-size: 20px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            outline: none;
+        }
+
+        #st {
+            background: rgb(254, 218, 218);
+            color: rgb(88, 35, 2);
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        #st:active {
+            transform: translateY(3px)
+        }
+
+        /* central play block */
+        #block {
+            position: relative;
+            height: 80vw;
+            width: 80vw;
+            max-height: 250px;
+            max-width: 250px;
+            border-radius: 10%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        .center {
+            position: absolute;
+            top: 30%;
+            left: 30%;
+            height: 32vw;
+            width: 32vw;
+            max-height: 100px;
+            max-width: 100px;
+            border-radius: 50%;
+            background-color: rgb(50, 50, 50);;
+            border: 3px solid white;
+        }
+.color{
+    border: 3px solid white;
+    
+}
+        #red {
+            border-radius: 125px 0px 0px 0px;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        #blue {
+            border-radius: 0px 125px 0px 0px;
+            background: rgba(0, 0, 255, 0.1);
+        }
+
+        #yellow {
+            border-radius: 0px 0px 0px 125px;
+            background: rgba(255, 255, 0, 0.1);
+        }
+
+        #green {
+            border-radius: 0px 0px 125px 0px;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        /* score */
+        #scr {
+            font-size: 20px;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+    </style>
+    <script>
+        const block = document.getElementById("block");
+        const scr = document.getElementById("scr");
+        const message = document.getElementById("message");
+        const lights = ["red", "green", "blue", "yellow"];
+
+        let lightVals = [];
+        let idx = 0;
+        let score = 0;
+        let awaitingPlayer = false;
+        let gamestarted = false;
+
+        //default colors for red,green, blue and yellow( less brightness )
+        let colors = {
+            "red": 'rgba(255,0,0,0.1)',
+            "yellow": ' rgba(255, 255, 0,0.1)',
+            "blue": ' rgba(0,0, 255,0.1)',
+            "green": ' rgba(0, 255, 0,0.1)'
+        }
+
+        function startGame() {
+            //setting initial values 
+            gamestarted = true;
+            lightVals = [];
+            idx = 0;
+            score = 0;
+            awaitingPlayer = false;
+            scr.textContent = 'score : ';
+            message.textContent = "";
+            generateAndShow();
+        }
+
+        function generateAndShow() {
+            //generate one random color and add to the light values sequence
+            lightVals.push(Math.floor(Math.random() * 4));
+            //render the sequence
+            lightVals.forEach((val, i) => {
+                setTimeout(() => {
+                    document.getElementById(lights[val]).style.background = lights[val];
+                    setTimeout(() => {
+                        document.getElementById(lights[val]).style.background = colors[lights[val]];
+
+                    }, 500);
+                }, i * 800);
+            });
+            // after showing sequence, let the player play
+            setTimeout(() => {
+                awaitingPlayer = true;
+            }, lightVals.length * 800);
+        }
+
+        function check(c) {
+            //checking if game is running
+            if (!gamestarted) {
+                message.textContent = "Start the game first!";
+                setTimeout(() => {
+                    message.textContent = "";
+                }, 3000);
+                return;
+            }
+            //checking if it is player's turn
+            if (!awaitingPlayer) {
+                message.textContent = "Sequence is displaying,wait for your turn!";
+                setTimeout(() => {
+                    message.textContent = "";
+                }, 3000);
+                return;
+            }
+            //wrong choice
+            if (lightVals[idx] !== c) {
+                message.textContent = "Wrong choice!";
+                awaitingPlayer = false;
+                gamestarted = false;
+                alert('Game Over');
+                scr.textContent = "Final score of this round: " + score;
+                return;
+            }
+
+            // correct choice
+            idx += 1;
+            document.getElementById(lights[c]).style.background = lights[c];
+            message.textContent="Correct choice!"
+            setTimeout(() => {
+                document.getElementById(lights[c]).style.background = colors[lights[c]];
+                message.textContent=""
+            }, 500);
+            score += 1;
+            scr.textContent = 'score : ' + String(score);
+            
+            // check if sequence completed
+            if (idx === lightVals.length) {
+                awaitingPlayer = false;
+                idx = 0;
+                setTimeout(() => {
+                    generateAndShow();
+                }, 1800);
+
+            }
+        }
+    </script>
+</body>
+
+</html>
